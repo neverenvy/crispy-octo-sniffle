@@ -5,7 +5,7 @@
 #include <iomanip>
 
 /**
- \brief Use for debug mode 123
+ \brief Use for debug mode 12345
 */
 #define MODE TESTING
 
