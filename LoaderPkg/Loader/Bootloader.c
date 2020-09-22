@@ -89,7 +89,7 @@ InitGraphics (
 
   ASSERT (LoaderParams != NULL);
 
-  STATIC EFI_GRAPHICS_OUTPUT_BLT_PIXEL mBlackColour = {0x00, 0x00, 0x00, 0x00};
+  //STATIC EFI_GRAPHICS_OUTPUT_BLT_PIXEL mBlackColour = {0x00, 0x00, 0x00, 0x00};
 
   //
   // Obtain graphics output protocol.
@@ -117,26 +117,44 @@ InitGraphics (
   //
   // Fill screen with black.
   //
-  GraphicsOutput->Blt (
-    GraphicsOutput,
-    &mBlackColour,
-    EfiBltVideoFill,
-    0,
-    0,
-    0,
-    0,
-    GraphicsOutput->Mode->Info->HorizontalResolution,
-    GraphicsOutput->Mode->Info->VerticalResolution,
-    0
-    );
+    
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION * INFO = NULL;
+    UINTN SizeOfInfo = 0;
+    UINT32 Success_Mode=0;
+    
+    for (UINT32 Mode=0;Mode<GraphicsOutput->Mode->MaxMode;Mode++)
+    {
+        if (GraphicsOutput->QueryMode(GraphicsOutput,Mode,&SizeOfInfo,&INFO)==EFI_SUCCESS)
+        {
+            if (INFO->HorizontalResolution==1440 && INFO->VerticalResolution==900){
+                Success_Mode=Mode;
+                break;
+            }
+        }
+    }
+    GraphicsOutput->SetMode(GraphicsOutput,Success_Mode);
+    
+    /* GraphicsOutput->Blt(
+        GraphicsOutput,
+        &mBlackColour,
+        EfiBltVideoFill,
+        0,
+        0,
+        0,
+        0,
+        INFO->HorizontalResolution,
+        INFO->VerticalResolution,
+        0
+        ); */
 
-  //
-  // Fill GPU properties.
-  //
-  LoaderParams->FrameBufferBase      = GraphicsOutput->Mode->FrameBufferBase;
-  LoaderParams->FrameBufferSize      = GraphicsOutput->Mode->FrameBufferSize;
-  LoaderParams->HorizontalResolution = GraphicsOutput->Mode->Info->HorizontalResolution;
-  LoaderParams->VerticalResolution   = GraphicsOutput->Mode->Info->VerticalResolution;
+          //
+          // Fill GPU properties.
+          //
+          LoaderParams->FrameBufferBase      = GraphicsOutput->Mode->FrameBufferBase;
+          LoaderParams->FrameBufferSize      = GraphicsOutput->Mode->FrameBufferSize;
+          LoaderParams->HorizontalResolution = GraphicsOutput->Mode->Info->HorizontalResolution;
+          LoaderParams->VerticalResolution   = GraphicsOutput->Mode->Info->VerticalResolution;
+    
 
   return EFI_SUCCESS;
 }
@@ -968,7 +986,7 @@ UefiMain (
   UINTN              EntryPoint;
   VOID               *GateData;
 
-#if 1 ///< Uncomment to await debugging
+ #if 0 ///< Uncomment to await debugging
   volatile BOOLEAN   Connected;
   DEBUG ((DEBUG_INFO, "JOS: Awaiting debugger connection\n"));
 
